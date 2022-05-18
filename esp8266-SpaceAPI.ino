@@ -40,12 +40,11 @@ extern "C" {
 //NOT IMPLEMENTED //#define I2C
 
 // Accesspoint definitions
-const char* strSsid     = "<your_accesspoint>";
-const char* strPassword = "<your_password>";
+const char* strSsid     = "<YOUR_SSID>";
+const char* strPassword = "<YOUR_PASSWORD>";
 
 // API settings
-const char* strServer   = "<your_domain.tld>";
-const char* strApiKey   = "<your_api_key>";
+const char* strServer   = "ackspace.nl";
 
 ///////////////////////////////////////////////////////////////////////////////////
 // NOTE: you progably don't need to edit anything below this point, unless you want to break stuff
@@ -228,13 +227,14 @@ void updateSpacestateIndicator()
 #ifdef NEOPIXELS
 uint32_t generateRandomColor()
 {
-    byte arrColors[] = { 0, 1, 2, 3, 4, 6, 8, 12, 16, 23, 32, 45, 64, 90, 128, 180, 255 };
+    uint8_t arrColors[] = { 0, 1, 2, 3, 4, 6, 8, 12, 16, 23, 32, 45, 64, 90, 128, 180, 255 };
     return pixels.Color( arrColors[ random( sizeof( arrColors ) ) ], arrColors[ random( sizeof( arrColors ) ) ], arrColors[ random( sizeof( arrColors ) ) ] );
 }
 
 uint32_t determineSpaceStateColor()
 {
-    WiFiClient  client;
+    //WiFiClient  client;
+    WiFiClientSecure client;
     char        character;
     uint8_t     nNewLines = 0;
     uint16_t    nPos = 0;
@@ -247,7 +247,9 @@ uint32_t determineSpaceStateColor()
 
     JsonVarFetch jsonVarFetch( arrQueries, 1, strResult, 64 );
 
-    if ( !client.connect( strServer, 80 ) )
+    // Ignore certificate
+    client.setInsecure();
+    if ( !client.connect( strServer, 443 ) )
     {
         Serial.println("connection failed");
         // Cannot connect, return blue
@@ -294,7 +296,7 @@ uint32_t determineSpaceStateColor()
             //Serial.print( character );
         }
 
-        ParseStatus::Enum eParseStatus;
+        ParseStatus eParseStatus;
         if ( nNewLines >= 4 && ( eParseStatus = jsonVarFetch.processCharacter( character ) ) < ParseStatus::Ok )
         {
             switch ( eParseStatus )
@@ -345,14 +347,16 @@ uint32_t determineSpaceStateColor()
     }
 
     // Space open, return green
-    if ( strcmpi( strResult, "true" ) == 0 )
+    //if ( strcmpi( strResult, "true" ) == 0 )
+    if ( strcmp( strResult, "true" ) == 0 )
     {
         Serial.println( "Open!" );
         return pixels.Color( 0, 255, 0 );
     }
 
     // Space closed, return red
-    if ( strcmpi( strResult, "false" ) == 0 )
+    //if ( strcmpi( strResult, "false" ) == 0 )
+    if ( strcmp( strResult, "false" ) == 0 )
     {
         Serial.println( "Closed" );
         return pixels.Color( 255, 0, 0 );

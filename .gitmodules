@@ -1,0 +1,3 @@
+[submodule "JsonVarFetch"]
+	path = JsonVarFetch
+	url = https://github.com/ACKspace/JsonVarFetch
